@@ -134,7 +134,7 @@ function Listing() {
             to={`/contact/${listing.userRef}?listingName=${listing.name}`}
             className='primaryButton'
           >
-            Contact Ownwer
+            Contact Owner
           </Link>
         )}
       </div>
