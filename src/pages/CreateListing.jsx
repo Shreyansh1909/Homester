@@ -11,7 +11,9 @@ import {
 } from 'firebase/storage'
 import { db } from '../firebase.config'
 import { v4 as uuidv4 } from 'uuid'
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { addDoc, collection, limit, serverTimestamp } from 'firebase/firestore'
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'
+import mapboxgl from 'mapbox-gl'
 
 function CreateListing() {
   const [geolocationEnabled, setgeolocationEnabled] = useState(true)
@@ -51,6 +53,8 @@ function CreateListing() {
   const auth = getAuth()
   const navigate = useNavigate()
   const isMounted = useRef(true)
+  mapboxgl.accessToken =
+    'pk.eyJ1Ijoic2hyZXlhbnNoMTkwOSIsImEiOiJjbDcyOTEyZ24wN2huNDBtYWQ3eWUyd2p3In0.HLtf_wa_gHU4lq6NBhY29g'
 
   useEffect(() => {
     if (isMounted) {
@@ -89,8 +93,22 @@ function CreateListing() {
     let location
 
     if (geolocationEnabled) {
-      geolocation.lat = latitude
-      geolocation.lng = longitude
+      // const response = await fetch(
+      //   `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=AIzaSyBBXHlF8llBfd1lzAMt-2mP0Su9Ee-yjec`
+      // )
+
+      const geocodingClient = mbxGeocoding({
+        accessToken: mapboxgl.accessToken,
+      })
+      const response = await geocodingClient
+        .forwardGeocode({
+          query: 'Gaurav Tower Jaipur',
+          limit: 1,
+        })
+        .send()
+      console.log(response.body.features[0].geometry.coordinates)
+      geolocation.lat = response.body.features[0].geometry.coordinates[1] ?? 0
+      geolocation.lng = response.body.features[0].geometry.coordinates[0] ?? 0
       location = address
     }
 
@@ -126,7 +144,6 @@ function CreateListing() {
           },
           () => {
             // Handle successful uploads on complete
-            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
               resolve(downloadURL)
             })
