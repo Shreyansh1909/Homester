@@ -12,6 +12,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { v4 as uuidv4 } from 'uuid'
 import Spinner from '../Components/Spinner'
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'
+import mapboxgl from 'mapbox-gl'
 
 function EditListing() {
   // eslint-disable-next-line
@@ -54,6 +56,8 @@ function EditListing() {
   const navigate = useNavigate()
   const params = useParams()
   const isMounted = useRef(true)
+  mapboxgl.accessToken =
+    'pk.eyJ1Ijoic2hyZXlhbnNoMTkwOSIsImEiOiJjbDcyOTEyZ24wN2huNDBtYWQ3eWUyd2p3In0.HLtf_wa_gHU4lq6NBhY29g'
 
   // Redirect if listing is not user's
   useEffect(() => {
@@ -121,8 +125,22 @@ function EditListing() {
     let location
 
     if (geolocationEnabled) {
-      geolocation.lat = latitude
-      geolocation.lng = longitude
+      // const response = await fetch(
+      //   `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=AIzaSyBBXHlF8llBfd1lzAMt-2mP0Su9Ee-yjec`
+      // )
+
+      const geocodingClient = mbxGeocoding({
+        accessToken: mapboxgl.accessToken,
+      })
+      const response = await geocodingClient
+        .forwardGeocode({
+          query: address,
+          limit: 1,
+        })
+        .send()
+      console.log(response.body.features[0].geometry.coordinates)
+      geolocation.lat = response.body.features[0].geometry.coordinates[1] ?? 0
+      geolocation.lng = response.body.features[0].geometry.coordinates[0] ?? 0
       location = address
     }
 
@@ -141,13 +159,13 @@ function EditListing() {
           (snapshot) => {
             const progress =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            console.log('Upload is ' + progress + '% done')
+            //console.log('Upload is ' + progress + '% done')
             switch (snapshot.state) {
               case 'paused':
-                console.log('Upload is paused')
+                //console.log('Upload is paused')
                 break
               case 'running':
-                console.log('Upload is running')
+                //console.log('Upload is running')
                 break
               default:
                 break

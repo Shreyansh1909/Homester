@@ -47,7 +47,7 @@ function SignUp() {
       })
 
       const formDataCopy = { ...formData }
-      delete formDataCopy.password
+      delete formDataCopy.password //avoid password to store on database
       formDataCopy.timestamp = serverTimestamp()
 
       await setDoc(doc(db, 'users', user.uid), formDataCopy) //setDoc update database and add our user to user's collection
@@ -95,7 +95,7 @@ function SignUp() {
             />
             <img
               src={visibilityIcon}
-              alt='Show Password'
+              alt=''
               className='showPassword'
               onClick={() => setshowPassword((prev) => !prev)}
             />
